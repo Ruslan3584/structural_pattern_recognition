@@ -3,8 +3,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def xor_columns(col1,col2, noise_level):
-    # xor 2 columns
-    return np.sum((col1^col2)*np.log(noise_level) + (1^col1^col2)*np.log(1-noise_level))
+    temp_noise = noise_level
+    if noise_level == 0:
+        temp_noise += np.finfo(float).eps
+    elif noise_level == 1:
+        temp_noise -= np.finfo(float).eps
+    return np.sum((col1^col2)*np.log(temp_noise) + (1^col1^col2)*np.log(1-temp_noise))
 
 def get_equation(input_string, dataset, noise_level):
     # create image from input string 
@@ -27,13 +31,23 @@ def get_equation(input_string, dataset, noise_level):
     n_cols_ref = int(reference_symbols.shape[0]/n_rows_ref)
     pic = np.hstack(dataset[reference_symbols])
     reference_images = np.array(np.hsplit(np.vstack(np.hsplit(pic,n_rows_ref)),n_cols_ref))
-    
     return input_equation, noised_image, reference_images
+
+
+def restore(f, reference_images):
+    result = np.full((f.shape[0]),-1)
+    result[0] = np.argmax(f[0,:,0])
+    for i in range(1,f.shape[0]):
+        if result[i-1] in [0, 4, 5, 6]:
+            result[i] = np.argmax(f[i,:,0])
+        else:
+            result[i] = np.argmax(f[i,:,1])
+    return result
+
 
 def get_best_paths(reference_images,noised_image, noise_level):
     n_cols = int((noised_image.shape[1]/noised_image.shape[0])*3)
     noised_image_splitted = np.hsplit(noised_image,n_cols)
-    result = []
     # -inf if combination position-label is impossible
     f = np.full((n_cols,8,2),-np.inf)
     for c in [0,5,6]:
@@ -51,9 +65,9 @@ def get_best_paths(reference_images,noised_image, noise_level):
             f[column,c,1] = xor_columns(reference_images[c],noised_image_splitted[column], noise_level) + np.max(f[column+1,:,0])
         for c in [2,3,7]:
             f[column,c,1] = xor_columns(reference_images[c],noised_image_splitted[column], noise_level) + np.max(f[column+1,:,1])
-        result.append(np.argmax(np.max(f[column+1,:,:],axis=1)))
-    result.append(np.argmax(np.max(f[0,:,:],axis=1)))
-    result = result[::-1]
+      
+    
+    result = restore(f, reference_images)
     # create image from best labeling(result)
     result_img = np.hstack(reference_images[result])
     return result_img
