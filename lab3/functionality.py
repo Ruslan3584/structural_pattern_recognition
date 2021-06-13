@@ -274,6 +274,8 @@ def get_reparametrized_q(q, fi):
 
 @njit
 def get_reparametrized_g(g,fi):
+    height, width = fi.shape[:2]
+    n_labels = g.shape[-1]
     g_reparametrized = np.full_like(g, -np.inf)
     eps_array = np.zeros_like(g)
     for i in range(height):
@@ -359,7 +361,7 @@ def crossing_out(q, g):
 @njit
 def self_control(q_binary,g_binary):
     height,width,n_labels = q_binary.shape
-    result = np.zeros((height,width))
+    temp_result = np.ones((height,width))
     for i in range(height):
         for j in range(width):
             for k in range(n_labels):
@@ -368,9 +370,13 @@ def self_control(q_binary,g_binary):
                     q_binary[i,j,k] = 1
                     flag = crossing_out(q_binary, g_binary)
                     if flag == 1:
-                        result[i,j] = k
+                        temp_result[i,j] = k
                         break
                     if k == n_labels - 1 and flag == 0:
                         print('bad parameters')
+    result = temp_result[1:,1:]
     return result
+
+
+
 
