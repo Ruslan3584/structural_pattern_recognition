@@ -1,0 +1,36 @@
+[build-system]
+requires = ["hatchling>=1.18.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "structural-pattern-recognition"
+version = "0.1.0"
+description = "Laboratory works."
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [
+    { name = "Ruslan Khomenko, Maksym Shylo"}
+]
+classifiers = [
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "numpy>=2.4.1",
+    "matplotlib>=3.10.8",
+    "numba>=0.65.0",
+    "opencv-python>=4.13.0.92",
+    "pillow>=12.1.0",
+    "scipy==1.17.0",
+]
+
+[project.scripts]
+find-spaces = "labs.lab1.find_spaces:main"
+sudoku-solver = "labs.lab2.sudoku_solver:main"
+segmenter-2 = "labs.lab34.segmenter_2:main"
+segmenter-3 = "labs.lab34.segmenter_3:main"
+binary-addition = "labs.lab5.grammar:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["labs"]
